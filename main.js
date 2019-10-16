@@ -1,4 +1,4 @@
-const products = [
+const listOfProducts = [
     {"id": "0001", "name" : "Coca Cola", "price": 3},
     {"id": "0002", "name" : "Diet Coke", "price": 4},
     {"id": "0003", "name" : "Pepsi-Cola", "price": 5},
@@ -18,30 +18,72 @@ function print(products) {
 module.exports = print;
 
 function printReceipt(products) {
-    if (barcodeIsValid(products)) {
-        return barcodeIsValid(products);
+    if(checkBarcodes(products)) {
+        return generateReceipt(products);
     }
+    return null;
 }
 
-function barcodeIsValid(products) {
-    for(var x = 0; x < products.length; x++){
-        if(products.filter(result => result.id == products[x]).length == 0){   
+function checkBarcodes(products) {
+    for(var element = 0; element < products.length; element++) {
+        if(listOfProducts.filter(result => result.id == products[element]).length == 0) {   
             return false;
         }
     }
     return true;
 }
 
-function decodeTags(products) {
+function generateReceipt(products) {
+    var productResults = [];
+    var countBarcode = [];
+    var currentBarcode = '';
+    var product = '';
+    var price = 0;
+    var totalPrice = 0;
+    var receipt = '';
 
+    for(var element = 0; element < products.length; element++) {
+        currentBarcode = products[element];
+        if(countBarcode.indexOf(currentBarcode) == -1) {
+            listOfProducts.forEach(element => {
+                if(element.id == currentBarcode){
+                    product = element.name;
+                    price = element.price;
+                }
+            });
+            productResults.push({barcode: currentBarcode, productName: product, priceValue: price, count: countBarcodeLength(products, currentBarcode)});
+            countBarcode.push(currentBarcode);
+        }
+    }
+
+    productResults.sort((a, b) => (a.barcode > b.barcode) ? 1 : -1)
+    receipt = 'Receipts\n' + 
+    '------------------------------------------------------------\n';
+    for(var y = 0; y < productResults.length; y++) {
+        receipt += createSpaces(productResults[y].productName, productResults[y].priceValue, productResults[y].count) + '\n';
+        totalPrice += productResults[y].priceValue * productResults[y].count;
+    }
+    receipt += '------------------------------------------------------------\n' +
+    'Price: ' + totalPrice;
+    return receipt;
 }
 
-function calculateReceipt(products) {
-
+function countBarcodeLength(products, currentBarcode) {
+    return products.filter(result => result == currentBarcode).length;
 }
 
+function createSpaces(productName, price, count) {
+    var productLine = productName;
 
-
-function renderReceipt() {
-
+    for(var element = 0; element <= 31 - productName.length; element++) {
+        productLine += ' ';
+    }
+    productLine += price;
+    
+    for(element = productLine.length; element < 43; element++) {
+        productLine += ' ';
+    }
+    productLine += count;
+    
+    return productLine;
 }
